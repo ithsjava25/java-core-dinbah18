@@ -4,5 +4,8 @@ import java.time.LocalDate;
 
 public interface Perishable {
     LocalDate expirationDate();
-    boolean isExpired();
+
+    default boolean isExpired() {
+        return expirationDate().isBefore(LocalDate.now());
+    }
 }

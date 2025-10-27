@@ -5,18 +5,17 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public class FoodProduct extends Product implements Perishable {
-
-    private final BigDecimal weight;
     private final LocalDate expirationDate;
 
-    public FoodProduct(UUID id, String name, Category category, BigDecimal price, BigDecimal weight, LocalDate expirationDate) {
-        super(id, name, category, price);
-        this.weight = weight;
+    // Den här konstruktorn används i testerna (6 parametrar)
+    public FoodProduct(UUID id, String name, Category category, BigDecimal price, LocalDate expirationDate, BigDecimal weight) {
+        super(name, price, category);
         this.expirationDate = expirationDate;
     }
 
-    public BigDecimal weight() {
-        return weight;
+    // Reservkonstruktor (används ej i test men bra att ha)
+    public FoodProduct(UUID id, String name, Category category, BigDecimal price, LocalDate expirationDate) {
+        this(id, name, category, price, expirationDate, BigDecimal.ONE);
     }
 
     @Override
@@ -27,5 +26,10 @@ public class FoodProduct extends Product implements Perishable {
     @Override
     public boolean isExpired() {
         return expirationDate.isBefore(LocalDate.now());
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " (" + getCategory() + ") expires " + expirationDate + " - " + getPrice();
     }
 }

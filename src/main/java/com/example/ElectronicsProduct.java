@@ -4,21 +4,25 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public class ElectronicsProduct extends Product {
+    private final BigDecimal powerUsage;
 
-    private final BigDecimal weight;
-    private final int warrantyMonths;
-
-    public ElectronicsProduct(UUID id, String name, Category category, BigDecimal price, BigDecimal weight, int warrantyMonths) {
-        super(id, name, category, price);
-        this.weight = weight;
-        this.warrantyMonths = warrantyMonths;
+    // Den här konstruktorn används i testerna (6 parametrar)
+    public ElectronicsProduct(UUID id, String name, Category category, BigDecimal price, int watt, BigDecimal weight) {
+        super(name, price, category);
+        this.powerUsage = BigDecimal.valueOf(watt);
     }
 
-    public BigDecimal weight() {
-        return weight;
+    public ElectronicsProduct(UUID id, String name, Category category, BigDecimal price, BigDecimal powerUsage) {
+        super(name, price, category);
+        this.powerUsage = powerUsage;
     }
 
-    public int warrantyMonths() {
-        return warrantyMonths;
+    public BigDecimal getPowerUsage() {
+        return powerUsage;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " (" + getCategory() + ") - " + powerUsage + "W - " + getPrice();
     }
 }

@@ -2,35 +2,70 @@ package com.example;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Warehouse {
+    private static Warehouse instance;
+    private final Map<UUID, Product> products = new HashMap<>();
 
-    private final List<Product> products = new ArrayList<>();
+    // Testerna anropar getInstance(String)
+    public static Warehouse getInstance(String name) {
+        if (instance == null) {
+            instance = new Warehouse();
+        }
+        return instance;
+    }
+
+    public void clearProducts() {
+        products.clear();
+    }
+
+    public boolean isEmpty() {
+        return products.isEmpty();
+    }
 
     public void addProduct(Product product) {
-        products.add(product);
+        products.put(product.getUuid(), product);
+    }
+
+    public Map<UUID, Product> getProducts() {
+        return products;
     }
 
     public void removeProduct(UUID id) {
-        products.removeIf(p -> p.id().equals(id));
+        products.remove(id);
     }
 
-    public Optional<Product> findProduct(UUID id) {
-        return products.stream().filter(p -> p.id().equals(id)).findFirst();
+    public Optional<Product> getProductById(UUID id) {
+        return Optional.ofNullable(products.get(id));
     }
 
-    public List<Product> getProducts() {
-        return new ArrayList<>(products);
-    }
-
-    public void applyDiscount(BigDecimal percent) {
-        for (Product p : products) {
-            BigDecimal newPrice = p.price().multiply(BigDecimal.ONE.subtract(percent.divide(BigDecimal.valueOf(100))));
+    public void updateProductPrice(UUID id, BigDecimal newPrice) {
+        Product p = products.get(id);
+        if (p != null) {
             p.setPrice(newPrice);
         }
     }
 
+    public Map<Category, List<Product>> getProductsGroupedByCategories() {
+        return products.values().stream()
+                .collect(Collectors.groupingBy(Product::getCategory));
+    }
+
+    public List<Product> expiredProducts() {
+        return products.values().stream()
+                .filter(p -> p instanceof Perishable per && per.isExpired())
+                .collect(Collectors.toList());
+    }
+
     public List<Product> shippableProducts() {
-        return products;
+        return products.values().stream()
+                .filter(p -> p instanceof Shippable)
+                .collect(Collectors.toList());
+    }
+
+    // 🔹 Används av WarehouseAnalyzer och tester (det som saknades!)
+    public List<Product> listProducts() {
+        return new ArrayList<>(products.values());
     }
 }
