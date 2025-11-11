@@ -3,26 +3,32 @@ package com.example;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class ElectronicsProduct extends Product {
-    private final BigDecimal powerUsage;
+public final class ElectronicsProduct extends Product implements Shippable {
 
-    // Den här konstruktorn används i testerna (6 parametrar)
-    public ElectronicsProduct(UUID id, String name, Category category, BigDecimal price, int watt, BigDecimal weight) {
-        super(name, price, category);
-        this.powerUsage = BigDecimal.valueOf(watt);
-    }
+    private final int warrantyMonths;
+    private final BigDecimal weightKg;
 
-    public ElectronicsProduct(UUID id, String name, Category category, BigDecimal price, BigDecimal powerUsage) {
-        super(name, price, category);
-        this.powerUsage = powerUsage;
-    }
+    public ElectronicsProduct(UUID id, String name, Category category, BigDecimal price,
+                              int warrantyMonths, BigDecimal weightKg) {
 
-    public BigDecimal getPowerUsage() {
-        return powerUsage;
+        super(id, name, category, price);
+
+        if (warrantyMonths < 0) {
+            throw new IllegalArgumentException("Warranty months cannot be negative.");
+        }
+
+        this.warrantyMonths = warrantyMonths;
+        this.weightKg = weightKg;
     }
 
     @Override
-    public String toString() {
-        return getName() + " (" + getCategory() + ") - " + powerUsage + "W - " + getPrice();
+    public BigDecimal calculateShippingCost() {
+        // Shipping: 79kr + 49kr (heavy surcharge)
+        return BigDecimal.valueOf(79).add(BigDecimal.valueOf(49));
+    }
+
+    @Override
+    public String productDetails() {
+        return "Electronics: " + name() + ", Warranty: " + warrantyMonths + " months";
     }
 }

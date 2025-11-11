@@ -1,75 +1,40 @@
 package com.example;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.UUID;
 
-public class Product implements Shippable {
+public abstract class Product {
+
     private final UUID uuid;
     private final String name;
-    private BigDecimal price;
     private final Category category;
-    private final BigDecimal weight;
+    private final BigDecimal price;
 
-    public Product(String name, BigDecimal price, Category category) {
-        this.uuid = UUID.randomUUID();
+    protected Product(UUID uuid, String name, Category category, BigDecimal price) {
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price cannot be negative.");
+        }
+        this.uuid = uuid;
         this.name = name;
-        this.price = price;
         this.category = category;
-        this.weight = BigDecimal.valueOf(1.0); // standardvikt
+        this.price = price;
     }
 
-    public UUID getUuid() {
+    public UUID uuid() {
         return uuid;
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal newPrice) {
-        this.price = newPrice;
-    }
-
-    public Category getCategory() {
+    public Category category() {
         return category;
     }
 
-    @Override
-    public BigDecimal calculateShippingCost() {
-        // enkel fraktkostnadsberäkning
-        return weight.multiply(BigDecimal.valueOf(10));
+    public BigDecimal price() {
+        return price;
     }
 
-    @Override
-    public BigDecimal weight() {
-        return weight;
-    }
-
-    // Metod som används i testerna
-    public String productDetails() {
-        return String.format("%s (%s): %s", name, category, price);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Product)) return false;
-        Product product = (Product) o;
-        return uuid.equals(product.uuid);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(uuid);
-    }
-
-    @Override
-    public String toString() {
-        return name + " - " + category + " (" + price + ")";
-    }
+    public abstract String productDetails();
 }

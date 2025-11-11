@@ -4,18 +4,22 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public class FoodProduct extends Product implements Perishable {
+public final class FoodProduct extends Product implements Perishable, Shippable {
+
     private final LocalDate expirationDate;
+    private final BigDecimal weightKg;
 
-    // Den här konstruktorn används i testerna (6 parametrar)
-    public FoodProduct(UUID id, String name, Category category, BigDecimal price, LocalDate expirationDate, BigDecimal weight) {
-        super(name, price, category);
+    public FoodProduct(UUID id, String name, Category category, BigDecimal price,
+                       LocalDate expirationDate, BigDecimal weightKg) {
+
+        super(id, name, category, price);
+
+        if (weightKg.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Weight cannot be negative.");
+        }
+
         this.expirationDate = expirationDate;
-    }
-
-    // Reservkonstruktor (används ej i test men bra att ha)
-    public FoodProduct(UUID id, String name, Category category, BigDecimal price, LocalDate expirationDate) {
-        this(id, name, category, price, expirationDate, BigDecimal.ONE);
+        this.weightKg = weightKg;
     }
 
     @Override
@@ -24,12 +28,12 @@ public class FoodProduct extends Product implements Perishable {
     }
 
     @Override
-    public boolean isExpired() {
-        return expirationDate.isBefore(LocalDate.now());
+    public BigDecimal calculateShippingCost() {
+        return weightKg.multiply(BigDecimal.valueOf(50));
     }
 
     @Override
-    public String toString() {
-        return getName() + " (" + getCategory() + ") expires " + expirationDate + " - " + getPrice();
+    public String productDetails() {
+        return "Food: " + name() + ", Expires: " + expirationDate;
     }
 }

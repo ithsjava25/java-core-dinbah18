@@ -4,35 +4,39 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Warehouse {
+public final class Warehouse {
+
     private static Warehouse instance;
+    private final String name;
     private final Map<UUID, Product> products = new HashMap<>();
 
-    // Testerna anropar getInstance(String)
-    public static Warehouse getInstance(String name) {
-        if (instance == null) {
-            instance = new Warehouse();
-        }
-        return instance;
+    private Warehouse(String name) {
+        this.name = name;
     }
 
-    public void clearProducts() {
-        products.clear();
+    public static Warehouse getInstance(String name) {
+        if (instance == null) {
+            instance = new Warehouse(name);
+        }
+        return instance;
     }
 
     public boolean isEmpty() {
         return products.isEmpty();
     }
 
+    public void clearProducts() {
+        products.clear();
+    }
+
     public void addProduct(Product product) {
-        products.put(product.getUuid(), product);
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null.");
+        }
+        products.put(product.uuid(), product);
     }
 
-    public Map<UUID, Product> getProducts() {
-        return products;
-    }
-
-    public void removeProduct(UUID id) {
+    public void remove(UUID id) {
         products.remove(id);
     }
 
@@ -40,32 +44,33 @@ public class Warehouse {
         return Optional.ofNullable(products.get(id));
     }
 
-    public void updateProductPrice(UUID id, BigDecimal newPrice) {
+    public List<Product> getProducts() {
+        return Collections.unmodifiableList(new ArrayList<>(products.values()));
+    }
+
+    public void updateProductPrice(UUID id, BigDecimal price) {
         Product p = products.get(id);
-        if (p != null) {
-            p.setPrice(newPrice);
+        if (p == null) {
+            throw new NoSuchElementException("Product not found with id: " + id);
         }
     }
 
     public Map<Category, List<Product>> getProductsGroupedByCategories() {
         return products.values().stream()
-                .collect(Collectors.groupingBy(Product::getCategory));
+                .collect(Collectors.groupingBy(Product::category));
     }
 
-    public List<Product> expiredProducts() {
+    public List<Perishable> expiredProducts() {
         return products.values().stream()
-                .filter(p -> p instanceof Perishable per && per.isExpired())
-                .collect(Collectors.toList());
+                .filter(p -> p instanceof Perishable per && per.expirationDate().isBefore(java.time.LocalDate.now()))
+                .map(p -> (Perishable) p)
+                .toList();
     }
 
-    public List<Product> shippableProducts() {
+    public List<Shippable> shippableProducts() {
         return products.values().stream()
                 .filter(p -> p instanceof Shippable)
-                .collect(Collectors.toList());
-    }
-
-    // 🔹 Används av WarehouseAnalyzer och tester (det som saknades!)
-    public List<Product> listProducts() {
-        return new ArrayList<>(products.values());
+                .map(p -> (Shippable) p)
+                .toList();
     }
 }
