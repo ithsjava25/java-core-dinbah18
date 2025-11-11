@@ -1,6 +1,7 @@
 package com.example;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ public final class Warehouse {
         this.name = name;
     }
 
+    // Singleton
     public static Warehouse getInstance(String name) {
         if (instance == null) {
             instance = new Warehouse(name);
@@ -21,6 +23,7 @@ public final class Warehouse {
         return instance;
     }
 
+    // G-level
     public boolean isEmpty() {
         return products.isEmpty();
     }
@@ -49,20 +52,27 @@ public final class Warehouse {
     }
 
     public void updateProductPrice(UUID id, BigDecimal price) {
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price cannot be negative.");
+        }
+
         Product p = products.get(id);
         if (p == null) {
             throw new NoSuchElementException("Product not found with id: " + id);
         }
     }
 
+    // VG-level
     public Map<Category, List<Product>> getProductsGroupedByCategories() {
         return products.values().stream()
                 .collect(Collectors.groupingBy(Product::category));
     }
 
     public List<Perishable> expiredProducts() {
+        LocalDate today = LocalDate.now();
+
         return products.values().stream()
-                .filter(p -> p instanceof Perishable per && per.expirationDate().isBefore(java.time.LocalDate.now()))
+                .filter(p -> p instanceof Perishable per && per.expirationDate().isBefore(today))
                 .map(p -> (Perishable) p)
                 .toList();
     }
